@@ -1,8 +1,7 @@
-import { Router } from 'express';
-import { Request, Response } from 'express';
-
+import { Router, Request, Response } from 'express';
 import { TodoRoutes } from './todos/routes';
 import { TodoMemoryRoutes } from './todos/routes.memory';
+import { FlashcardRoutes } from './flashcards/routes.memory';
 import { DatasourceConfig, DatasourceType } from '../infrastructure/datasource/datasource.config';
 
 
@@ -17,6 +16,7 @@ export class AppRoutes {
 
     router.use('/api/todos', TodoRoutes.routes );
     router.use('/api/todos-memory', TodoMemoryRoutes.routes );
+    router.use('/api/flashcards', FlashcardRoutes.routes );
     
     // Endpoint de sistema para gestión de datasource
     router.get('/api/system/info', (req: Request, res: Response) => {
@@ -28,11 +28,12 @@ export class AppRoutes {
         endpoints: {
           unified: '/api/todos (uses configured datasource)',
           memory: '/api/todos-memory (always uses memory)',
+          flashcards: '/api/flashcards (memory-based flashcard system)',
           system: '/api/system/info'
         },
         environment: {
-          NODE_ENV: process.env.NODE_ENV || 'development',
-          DATASOURCE_TYPE: process.env.DATASOURCE_TYPE || 'MEMORY'
+          NODE_ENV: process.env.NODE_ENV ?? 'development',
+          DATASOURCE_TYPE: process.env.DATASOURCE_TYPE ?? 'MEMORY'
         }
       });
     });
