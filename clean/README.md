@@ -1171,6 +1171,17 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
+#### **Evidencia general **
+![Evidencia general](./doc/image.png)
+
+**Descripción**:
+Una captura de las pruebas hechas con postman
+
+---
+
+
+
+
 ### ✅ **Resumen de Evidencias**
 
 **🎯 Operaciones CRUD Completas Verificadas:**
