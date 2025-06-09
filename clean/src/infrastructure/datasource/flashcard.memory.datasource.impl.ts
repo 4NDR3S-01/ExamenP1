@@ -40,7 +40,7 @@ export class FlashcardMemoryDatasource implements FlashcardDatasource {
       createFlashcardDto.question,
       createFlashcardDto.answer,
       createFlashcardDto.categories,
-      createFlashcardDto.difficulty || 1
+      createFlashcardDto.difficulty ?? 1
     );
 
     this.flashcards.push(newFlashcard);
@@ -53,7 +53,7 @@ export class FlashcardMemoryDatasource implements FlashcardDatasource {
 
   async findById(id: number): Promise<FlashcardEntity> {
     const flashcard = this.flashcards.find(flashcard => flashcard.id === id);
-    if (!flashcard) throw `Flashcard with id ${id} not found`;
+    if (!flashcard) throw new Error(`Flashcard con la id ${id} no encontrada`);
     return flashcard;
   }
 
@@ -86,7 +86,7 @@ export class FlashcardMemoryDatasource implements FlashcardDatasource {
   async getAllCategories(): Promise<string[]> {
     const allCategories = this.flashcards.flatMap(flashcard => flashcard.categories);
     const uniqueCategories = [...new Set(allCategories)];
-    return uniqueCategories.sort();
+    return uniqueCategories.sort((a, b) => a.localeCompare(b));
   }
 
   async searchByText(text: string): Promise<FlashcardEntity[]> {

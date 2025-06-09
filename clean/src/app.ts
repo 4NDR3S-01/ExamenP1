@@ -12,7 +12,7 @@ import { DatasourceConfig, DatasourceType } from './infrastructure/datasource/da
 async function main() {
   
   // Detectar el tipo de datasource desde variables de entorno o usar MEMORY por defecto
-  const datasourceType = (process.env.DATASOURCE_TYPE || 'MEMORY').toUpperCase() as keyof typeof DatasourceType;
+  const datasourceType = (process.env.DATASOURCE_TYPE ?? 'MEMORY').toUpperCase() as keyof typeof DatasourceType;
   const selectedDatasource = DatasourceType[datasourceType] || DatasourceType.MEMORY;
   
   console.log(`🔧 Starting application with datasource: ${selectedDatasource}`);
