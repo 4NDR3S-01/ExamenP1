@@ -7,9 +7,14 @@ interface TodoMemoryModel {
   completedAt?: Date | null;
 }
 
+/**
+ * PARÁMETRO 3: Servicio REST auxiliar - Capa de Infraestructura (2/2)
+ * Esta clase implementa la segunda capa del servicio auxiliar de TODOs
+ * proporcionando persistencia en memoria para la arquitectura de 2 capas.
+ */
 export class TodoMemoryDatasourceImpl implements TodoDatasource {
   
-  // Arreglo en memoria para almacenar los todos
+  // PARÁMETRO 3: Almacenamiento en memoria del servicio auxiliar
   private todos: TodoMemoryModel[] = [];
   private nextId: number = 1;
 
@@ -40,14 +45,14 @@ export class TodoMemoryDatasourceImpl implements TodoDatasource {
   async findById(id: number): Promise<TodoEntity> {
     const todo = this.todos.find(t => t.id === id);
     
-    if (!todo) throw `Todo with id ${id} not found`;
+    if (!todo) throw new Error(`Todo with id ${id} not found`);
     return TodoEntity.fromObject(todo);
   }
 
   async updateById(updateTodoDto: UpdateTodoDto): Promise<TodoEntity> {
     const todoIndex = this.todos.findIndex(t => t.id === updateTodoDto.id);
     
-    if (todoIndex === -1) throw `Todo with id ${updateTodoDto.id} not found`;
+    if (todoIndex === -1) throw new Error(`Todo with id ${updateTodoDto.id} not found`);
 
     // Actualizar solo los campos que vienen en values
     const currentTodo = this.todos[todoIndex];
@@ -63,7 +68,7 @@ export class TodoMemoryDatasourceImpl implements TodoDatasource {
   async deleteById(id: number): Promise<TodoEntity> {
     const todoIndex = this.todos.findIndex(t => t.id === id);
     
-    if (todoIndex === -1) throw `Todo with id ${id} not found`;
+    if (todoIndex === -1) throw new Error(`Todo with id ${id} not found`);
 
     const deletedTodo = this.todos[todoIndex];
     this.todos.splice(todoIndex, 1);

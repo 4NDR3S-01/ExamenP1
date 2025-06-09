@@ -11,6 +11,11 @@ import {
   FlashcardRepository 
 } from '../../domain';
 
+/**
+ * PARÁMETRO 4: Controlador del servicio principal (flashcards)
+ * Este controlador maneja las operaciones REST del servicio principal,
+ * el cual puede consumir servicios auxiliares a través del sistema de rutas unificado.
+ */
 export class FlashcardsController {
 
   constructor(

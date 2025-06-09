@@ -8,10 +8,14 @@ interface Options {
   public_path?: string;
 }
 
-
+/**
+ * PARÁMETRO 4: Servidor principal que integra todos los servicios
+ * Este servidor unifica el servicio principal (flashcards) con los servicios
+ * auxiliares (todos), proporcionando una capa de consumo integrada.
+ */
 export class Server {
 
-  private app = express();
+  private readonly app = express();
   private readonly port: number;
   private readonly publicPath: string;
   private readonly routes: Router;

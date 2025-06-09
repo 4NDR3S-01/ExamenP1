@@ -13,7 +13,7 @@ export abstract class StudySessionDatasource {
 
   abstract create(createStudySessionDto: CreateStudySessionDto): Promise<StudySessionEntity>;
   
-  // TODO: paginación
+  // TOO: paginación
   abstract getAll(): Promise<StudySessionEntity[]>;
   
   abstract findById(id: number): Promise<StudySessionEntity>;

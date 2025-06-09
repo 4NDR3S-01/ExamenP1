@@ -5,12 +5,19 @@ import { Server } from './presentation/server';
 import { initializeTypeORM } from './data/typeorm/typeorm.config';
 import { DatasourceConfig, DatasourceType } from './infrastructure/datasource/datasource.config';
 
+/**
+ * PARÁMETRO 4: Aplicación principal que orquesta todos los servicios
+ * Este archivo inicia y configura la integración entre el servicio principal (flashcards)
+ * y los servicios auxiliares (todos), proporcionando un punto de entrada unificado.
+ */
+
 (async()=> {
   main();
 })();
 
 async function main() {
   
+  // PARÁMETRO 4: Configuración unificada de datasources para todos los servicios
   // Detectar el tipo de datasource desde variables de entorno o usar MEMORY por defecto
   const datasourceType = (process.env.DATASOURCE_TYPE ?? 'MEMORY').toUpperCase() as keyof typeof DatasourceType;
   const selectedDatasource = DatasourceType[datasourceType] || DatasourceType.MEMORY;

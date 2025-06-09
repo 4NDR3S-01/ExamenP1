@@ -5,18 +5,25 @@ import { DatasourceConfig, DatasourceType } from '../../infrastructure/datasourc
 import { TodoMemoryDatasourceImpl } from '../../infrastructure/datasource/todo.memory.datasource.impl';
 import { TodoRepositoryImpl } from '../../infrastructure/repositories/todo.repository.impl';
 
+/**
+ * PARÁMETRO 3: Servicio REST auxiliar - Capa de Presentación (1/2)
+ * Este controlador implementa la primera capa del servicio auxiliar de TODOs
+ * con arquitectura mínima de 2 capas requerida.
+ */
 export class TodosMemoryController {
 
   private todoRepository: TodoRepository;
   private memoryDatasource: TodoMemoryDatasourceImpl;
 
   constructor() {
+    // PARÁMETRO 3: Configuración del datasource para el servicio auxiliar
     // Asegurar que estamos usando el datasource de memoria
     DatasourceConfig.setDatasource(DatasourceType.MEMORY);
     this.memoryDatasource = DatasourceConfig.getDatasource(DatasourceType.MEMORY) as TodoMemoryDatasourceImpl;
     this.todoRepository = new TodoRepositoryImpl(this.memoryDatasource);
   }
 
+  // PARÁMETRO 3: Métodos del controlador (Capa de Presentación)
   public getTodos = (req: Request, res: Response) => {
     new GetTodos(this.todoRepository)
       .execute()
@@ -82,6 +89,7 @@ export class TodosMemoryController {
         nextId: rawData.length > 0 ? Math.max(...rawData.map(t => t.id)) + 1 : 1
       });
     } catch (error) {
+      console.error('Error getting memory stats:', error);
       res.status(500).json({ error: 'Error getting memory stats' });
     }
   };
@@ -96,6 +104,7 @@ export class TodosMemoryController {
       res.setHeader('Content-Disposition', 'attachment; filename="todos-export.json"');
       res.send(jsonData);
     } catch (error) {
+      console.error('Error exporting data:', error);
       res.status(500).json({ error: 'Error exporting data' });
     }
   };
@@ -135,6 +144,7 @@ export class TodosMemoryController {
       this.memoryDatasource.clear();
       res.json({ message: 'All data cleared successfully' });
     } catch (error) {
+      console.error('Error clearing data:', error);
       res.status(500).json({ error: 'Error clearing data' });
     }
   };
@@ -151,6 +161,7 @@ export class TodosMemoryController {
         datasourceType: 'MEMORY'
       });
     } catch (error) {
+      console.error('Error getting raw data:', error);
       res.status(500).json({ error: 'Error getting raw data' });
     }
   };
@@ -173,6 +184,7 @@ export class TodosMemoryController {
         count: this.memoryDatasource.getRawData().length
       });
     } catch (error) {
+      console.error('Error resetting to sample data:', error);
       res.status(500).json({ error: 'Error resetting to sample data' });
     }
   };

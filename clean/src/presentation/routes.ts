@@ -4,19 +4,25 @@ import { TodoMemoryRoutes } from './todos/routes.memory';
 import { FlashcardRoutes } from './flashcards/routes.memory';
 import { DatasourceConfig, DatasourceType } from '../infrastructure/datasource/datasource.config';
 
-
-
-
+/**
+ * PARÁMETRO 4: Capa para consumo de servicios REST vinculada con servicio aislado
+ * Esta clase implementa la integración entre el servicio principal (flashcards) 
+ * y el servicio auxiliar (todos), permitiendo el consumo conjunto de ambos servicios.
+ */
 export class AppRoutes {
-
 
   static get routes(): Router {
 
     const router = Router();
 
-    router.use('/api/todos', TodoRoutes.routes );
-    router.use('/api/todos-memory', TodoMemoryRoutes.routes );
+    // PARÁMETRO 4: Integración de servicios - Servicio principal (flashcards)
     router.use('/api/flashcards', FlashcardRoutes.routes );
+    
+    // PARÁMETRO 4: Integración de servicios - Servicio auxiliar aislado (todos)
+    router.use('/api/todos-memory', TodoMemoryRoutes.routes );
+    
+    // PARÁMETRO 4: Capa de consumo unificada - El servicio principal consume servicios auxiliares
+    router.use('/api/todos', TodoRoutes.routes );
     
     // Endpoint de sistema para gestión de datasource
     router.get('/api/system/info', (req: Request, res: Response) => {

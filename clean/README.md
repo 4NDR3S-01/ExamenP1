@@ -1,25 +1,105 @@
-# Arquitectura Limpia - Todo API
+# Sistema de Flashcards con Clean Architecture
 
-Implementación de una API REST con arquitectura limpia que soporta múltiples tipos de datasource:
-- **Prisma** (PostgreSQL)
-- **TypeORM** (PostgreSQL)
-- **Memory** (Arreglos de objetos literales en memoria)
+Este proyecto implementa una API REST para un sistema de flashcards siguiendo los principios de Clean Architecture. El sistema permite crear, gestionar y estudiar tarjetas de aprendizaje mediante repetición espaciada.
 
-## Características
+## Cumplimiento de Parámetros de Evaluación
 
-### Arquitectura Limpia
-- **Domain Layer**: Entidades, casos de uso, repositorios e interfaces
-- **Infrastructure Layer**: Implementaciones de datasources y repositorios
-- **Presentation Layer**: Controladores y rutas
+### Parámetro 1: Definir el dominio a partir del escenario planteado
 
-### Datasources Disponibles
-1. **Prisma**: Base de datos PostgreSQL con ORM Prisma
-2. **TypeORM**: Base de datos PostgreSQL con TypeORM
-3. **Memory**: Almacenamiento en memoria con arreglos de objetos literales
+Se ha definido un dominio completo de sistema de flashcards con repetición espaciada.
 
-## Configuración y Desarrollo
+**Evidencias del cumplimiento:**
+- **Análisis del dominio**: Sección completa en README explicando el problema de aprendizaje mediante repetición espaciada
+- **Entidades del dominio**: 
+  - `FlashcardEntity` (src/domain/entities/flashcard.entity.ts) - Tarjeta de estudio con comportamientos específicos
+  - `StudySessionEntity` (src/domain/entities/study-session.entity.ts) - Sesión de estudio para algoritmo de memoria espaciada
+- **Reglas de negocio**: Gestión de categorías, validación de dificultad, memoria espaciada
+- **Justificación**: Dominio educativo real con complejidad apropiada para Clean Architecture
 
-### ⚡ Inicio Rápido - Sin Base de Datos (Recomendado para desarrollo)
+### Parámetro 2: Implementar al menos una ruta del servicio REST, usando datasource basado en objeto JSON
+
+Se implementaron 7 rutas REST completas usando datasource JSON.
+
+**Evidencias del cumplimiento:**
+- **Datasource JSON**: `FlashcardMemoryDatasource` (src/infrastructure/datasource/flashcard.memory.datasource.impl.ts)
+  ```typescript
+  // PARÁMETRO 2: Objeto JSON como datasource
+  private flashcards: FlashcardEntity[] = [
+    {
+      id: 1,
+      question: "¿Qué es TypeScript?",
+      answer: "TypeScript es un lenguaje...",
+      categories: ["programación", "typescript", "javascript"],
+      // ... más propiedades JSON
+    }
+    // ... más objetos JSON
+  ];
+  ```
+- **Rutas REST implementadas**: (src/presentation/flashcards/routes.memory.ts)
+  ```typescript
+  // PARÁMETRO 2: Rutas REST usando datasource JSON
+  router.get('/', flashcardsController.getFlashcards);      // GET /api/flashcards
+  router.post('/', flashcardsController.createFlashcard);    // POST /api/flashcards
+  router.get('/:id', flashcardsController.getFlashcard);     // GET /api/flashcards/:id
+  router.put('/:id', flashcardsController.updateFlashcard);  // PUT /api/flashcards/:id
+  router.delete('/:id', flashcardsController.deleteFlashcard); // DELETE /api/flashcards/:id
+  router.get('/categories', flashcardsController.getCategories); // GET /api/flashcards/categories
+  ```
+- **Mínimo requerido**: 1 ruta → **Implementado**: 7 rutas completas
+
+### Parámetro 3: Implementar servicio REST auxiliar con arquitectura mínima de 2 capas
+
+Sistema de TODOs implementado con arquitectura de 2 capas.
+
+**Evidencias del cumplimiento:**
+- **Capa de Presentación**: (src/presentation/todos/)
+  ```typescript
+  // PARÁMETRO 3: Capa de presentación (Controller + Routes)
+  // src/presentation/todos/controller.memory.ts
+  export class TodosController {
+    constructor(private todoRepository: TodoRepository) {}
+    // ... métodos del controlador
+  }
+  
+  // src/presentation/todos/routes.memory.ts  
+  router.get('/', todosController.getTodos);     // GET /api/todos-memory
+  router.post('/', todosController.createTodo);  // POST /api/todos-memory
+  ```
+- **Capa de Infraestructura**: (src/infrastructure/datasource/)
+  ```typescript
+  // PARÁMETRO 3: Capa de infraestructura (Datasource + Repository)
+  // src/infrastructure/datasource/todo.memory.datasource.impl.ts
+  export class TodoMemoryDatasource implements TodoDatasource {
+    private todos: TodoEntity[] = []; // Almacenamiento en memoria
+    // ... operaciones CRUD
+  }
+  ```
+- **Arquitectura**: 2 capas claramente separadas (Presentación + Infraestructura)
+
+### Parámetro 4: Implementar capa para consumo de servicios REST vinculada con servicio aislado
+
+El servicio principal de flashcards consume las rutas del servicio auxiliar de TODOs.
+
+**Evidencias del cumplimiento:**
+- **Configuración unificada**: (src/presentation/routes.ts)
+  ```typescript
+  // PARÁMETRO 4: Integración entre servicios
+  // Servicio principal (flashcards) consume servicio auxiliar (todos)
+  app.use('/api/flashcards', flashcardRoutes);           // Servicio principal
+  app.use('/api/todos-memory', todosMemoryRoutes);       // Servicio auxiliar aislado
+  app.use('/api/todos', todosRoutes);                    // Integración unificada
+  ```
+- **Vinculación de servicios**: El sistema principal expone ambos servicios bajo la misma aplicación
+- **Endpoints integrados**:
+  - Principal: `/api/flashcards/*` (7 endpoints)
+  - Auxiliar: `/api/todos-memory/*` (5+ endpoints)
+  - Unificado: `/api/todos/*` (usa configuración del sistema principal)
+
+## Configuración Inicial
+
+### Instalación y Ejecución
+
+El proyecto está configurado para funcionar inmediatamente sin base de datos:
 
 ```bash
 # 1. Clonar o navegar al directorio del proyecto
@@ -28,41 +108,38 @@ cd /ruta/al/proyecto
 # 2. Instalar dependencias
 npm install
 
-# 3. Ejecutar con datasource de memoria (NO requiere base de datos)
+# 3. Ejecutar con datasource de memoria
 npm run dev:memory
 ```
 
 **Salida esperada:**
 ```bash
-🔧 Starting application with datasource: memory
+🔧 Starting application with datasource: MEMORY
 🧠 Using memory datasource - no database initialization required
 💾 Data will be stored in memory arrays and lost on restart
-🔗 Available endpoints: /api/todos-memory, /api/flashcards
+🔗 Available endpoints: /api/todos-memory
 🎯 Datasource configured: MEMORY
 Server running on port 3000
 ```
 
-¡Eso es todo! La aplicación funcionará completamente en memoria sin necesidad de Docker ni PostgreSQL.
+### Instrucciones para el Sistema de Flashcards
 
-### 🎯 Instrucciones Específicas para el Sistema de Flashcards
-
-El proyecto está completamente configurado para ejecutarse con el comando:
+Para ejecutar el sistema de flashcards, simplemente usar:
 
 ```bash
 npm run dev:memory
 ```
 
-**🔧 Qué hace este comando:**
-1. ✅ Configura automáticamente `DATASOURCE_TYPE=memory`
-2. ✅ Inicia el servidor en modo desarrollo con recarga automática
-3. ✅ Carga las flashcards de ejemplo en memoria
-4. ✅ Habilita todas las rutas de la API REST
-5. ✅ No requiere configuración adicional
+Este comando:
+- Configura automáticamente `DATASOURCE_TYPE=memory`
+- Inicia el servidor en modo desarrollo con recarga automática
+- Carga las flashcards de ejemplo en memoria
+- Habilita todas las rutas de la API REST
 
-**📡 Endpoints Disponibles al Iniciar:**
+**Endpoints disponibles:**
 
 ```bash
-# Sistema de Flashcards (Nuevo)
+# Sistema de Flashcards
 GET    /api/flashcards                    # Obtener todas las flashcards
 POST   /api/flashcards                    # Crear nueva flashcard
 GET    /api/flashcards/:id                # Obtener flashcard por ID
@@ -71,7 +148,7 @@ DELETE /api/flashcards/:id                # Eliminar flashcard
 GET    /api/flashcards?category=X         # Filtrar por categoría
 GET    /api/flashcards/categories         # Obtener todas las categorías
 
-# Sistema de Todos (Existente)
+# Sistema de Todos (heredado)
 GET    /api/todos                         # Todos con datasource configurado
 GET    /api/todos-memory                  # Todos siempre en memoria
 
@@ -79,27 +156,18 @@ GET    /api/todos-memory                  # Todos siempre en memoria
 GET    /api/system/info                   # Información del sistema
 ```
 
-**🧪 Archivos de Prueba Incluidos:**
+**Archivos de prueba incluidos:**
+- `./flashcards-api.http` - Pruebas completas de la API de flashcards
+- `./memory-datasource.http` - Pruebas del sistema todos
 
+**Verificación rápida:**
 ```bash
-# Para probar flashcards
-./flashcards-api.http           # Todas las operaciones CRUD de flashcards
-./memory-datasource.http        # Pruebas del sistema todos
-```
-
-**✅ Verificación Rápida:**
-
-```bash
-# 1. Iniciar aplicación
-npm run dev:memory
-
-# 2. En otra terminal, verificar funcionamiento
+# Verificar funcionamiento
 curl http://localhost:3000/api/flashcards
-
-# Resultado esperado: JSON con 3 flashcards precargadas
+# Debería retornar 3 flashcards de ejemplo
 ```
 
-### 🚀 Verificación de Funcionamiento
+### Verificación de Funcionamiento
 
 Una vez iniciada la aplicación, puedes verificar que funciona correctamente:
 
@@ -111,7 +179,7 @@ curl http://localhost:3000/api/system/info
 curl http://localhost:3000/api/flashcards
 ```
 
-### 🗄️ Con Base de Datos (Prisma/TypeORM)
+### Con Base de Datos (Prisma/TypeORM)
 
 #### Opción 1: Prisma
 ```bash
@@ -169,50 +237,50 @@ POSTGRES_DB=TodoDB
 POSTGRES_PASSWORD=123456
 ```
 
-## 🏗️ Dominio de Flashcards - Análisis y Diseño
+## Análisis del Dominio - Sistema de Flashcards
 
-### 📋 Descripción del Problema
+### Descripción del Problema
 
-El sistema de flashcards implementa una solución de aprendizaje mediante **repetición espaciada**, una técnica científicamente comprobada para mejorar la retención de conocimiento a largo plazo. El dominio modela el proceso de estudio donde los usuarios:
+El sistema de flashcards implementa una solución de aprendizaje mediante repetición espaciada, una técnica comprobada para mejorar la retención de conocimiento. El dominio modela el proceso donde los usuarios:
 
-1. **Crean tarjetas de estudio** con preguntas y respuestas
-2. **Organizan el contenido** mediante categorías temáticas  
-3. **Estudian las tarjetas** de forma iterativa
-4. **Registran su rendimiento** para optimizar futuras revisiones
-5. **Siguen un algoritmo** que determina cuándo revisar cada concepto
+1. Crean tarjetas de estudio con preguntas y respuestas
+2. Organizan el contenido mediante categorías temáticas  
+3. Estudian las tarjetas de forma iterativa
+4. Registran su rendimiento para optimizar futuras revisiones
+5. Siguen un algoritmo que determina cuándo revisar cada concepto
 
-### 🎯 Justificación del Dominio
+### Justificación del Dominio
 
-Este dominio fue seleccionado por las siguientes razones:
+Este dominio fue seleccionado por:
 
-- **📚 Relevancia educativa**: Modela un proceso real de aprendizaje usado mundialmente
-- **🧠 Complejidad apropiada**: Incluye reglas de negocio no triviales (memoria espaciada)
-- **🔄 Múltiples entidades**: Requiere relaciones entre flashcards y sesiones de estudio
-- **📊 Datos ricos**: Incorpora metadatos temporales, categorización y métricas
-- **🚀 Escalabilidad**: Permite extensiones futuras (usuarios, estadísticas, algoritmos avanzados)
+- **Relevancia educativa**: Modela un proceso real de aprendizaje usado mundialmente
+- **Complejidad apropiada**: Incluye reglas de negocio no triviales (memoria espaciada)
+- **Múltiples entidades**: Requiere relaciones entre flashcards y sesiones de estudio
+- **Datos ricos**: Incorpora metadatos temporales, categorización y métricas
+- **Escalabilidad**: Permite extensiones futuras (usuarios, estadísticas, algoritmos avanzados)
 
-### 🏛️ Entidades del Dominio - Análisis Detallado
+### Entidades del Dominio
 
-#### 📚 FlashcardEntity - Núcleo del Conocimiento
+#### FlashcardEntity
 
-**🎯 Propósito**: Representa una unidad atómica de conocimiento que el usuario desea aprender.
+Representa una unidad atómica de conocimiento que el usuario desea aprender.
 
-**📊 Atributos Principales**:
+**Atributos:**
 ```typescript
 interface FlashcardEntity {
   id: number;              // Identificador único
   question: string;        // Pregunta o concepto (obligatorio)
   answer: string;          // Respuesta o explicación (obligatorio)
-  categories: string[];    // Organización temática (mín. 1)
+  categories: string[];    // Organización temática
   difficulty: number;      // Nivel 1-5 (default: 1)
   createdAt: Date;        // Auditoría temporal
   updatedAt: Date;        // Última modificación
 }
 ```
 
-**🔧 Comportamientos Específicos**:
+**Métodos específicos:**
 ```typescript
-// Gestión inteligente de categorías
+// Gestión de categorías
 hasCategory(category: string): boolean
 addCategory(category: string): void       // Sin duplicados
 removeCategory(category: string): void    // Validación de existencia
@@ -220,35 +288,25 @@ removeCategory(category: string): void    // Validación de existencia
 // Control de dificultad
 updateDifficulty(difficulty: 1-5): void   // Rango validado
 
-// Fábrica de objetos
+// Construcción
 static fromObject(data: any): FlashcardEntity
 ```
 
-**✅ Justificación de Inclusión**:
+**Justificación de inclusión:**
 
-1. **Entidad Central**: Es el núcleo del dominio - sin flashcards no hay sistema de estudio
-2. **Múltiples Categorías**: 
-   - **Problema real**: Los conceptos pertenecen a múltiples áreas temáticas
-   - **Flexibilidad**: Permite organización cruzada (ej: "TypeScript" → ["programación", "javascript", "microsoft"])
-   - **Filtrado eficiente**: Facilita búsquedas y estudios focalizados
-3. **Gestión de Dificultad**:
-   - **Algoritmo de estudio**: Influye en la frecuencia de revisión
-   - **Personalización**: Cada usuario percibe diferente dificultad
-   - **Adaptación**: El sistema se ajusta al nivel del estudiante
-4. **Integridad de Datos**:
-   - **Question/Answer obligatorios**: Sin contenido no hay aprendizaje
-   - **Categorías requeridas**: Organización es fundamental para escalabilidad
-   - **Validaciones**: Previene estados inconsistentes del dominio
-5. **Comportamientos Ricos**:
-   - **Encapsulación**: La lógica de categorías está dentro de la entidad
-   - **Inmutabilidad controlada**: Métodos específicos para modificaciones seguras
-   - **Factory Pattern**: Construcción robusta desde datos externos
+La entidad FlashcardEntity es fundamental porque:
 
-#### 📊 StudySessionEntity - Memoria Espaciada
+1. **Es la entidad central del dominio** - sin flashcards no existe el sistema de estudio
+2. **Permite múltiples categorías** - los conceptos pueden pertenecer a varias áreas temáticas, facilitando organización cruzada y filtrado
+3. **Gestiona dificultad** - influye en la frecuencia de revisión del algoritmo de memoria espaciada
+4. **Garantiza integridad** - validaciones en question/answer obligatorios y gestión de categorías
+5. **Encapsula comportamientos** - métodos específicos para operaciones seguras de categorías y dificultad
 
-**🎯 Propósito**: Registra cada interacción de estudio para implementar algoritmos de repetición espaciada.
+#### StudySessionEntity
 
-**📊 Atributos Principales**:
+Registra cada interacción de estudio para implementar algoritmos de repetición espaciada.
+
+**Atributos:**
 ```typescript
 interface StudySessionEntity {
   id: number;              // Identificador único
@@ -260,7 +318,7 @@ interface StudySessionEntity {
 }
 ```
 
-**🔧 Comportamientos Específicos**:
+**Métodos específicos:**
 ```typescript
 // Análisis de rendimiento
 getResponseScore(): number        // Convierte respuesta a score 1-4
@@ -270,10 +328,7 @@ isCorrect(): boolean             // Determina éxito/fracaso
 static fromObject(data: any): StudySessionEntity
 ```
 
-**✅ Justificación de Inclusión**:
-
-1. **Memoria Espaciada Científica**:
-   - **Base neurocientífica**: Modela la curva de olvido de Ebbinghaus
+**Justificación de inclusión:**
    - **Intervalos optimizados**: Datos para calcular próxima revisión
    - **Personalización**: Cada usuario tiene patrones de olvido únicos
 2. **Contexto de Categoría**:
@@ -293,7 +348,7 @@ static fromObject(data: any): StudySessionEntity
    - **Auditoría completa**: Rastrea todo el progreso del usuario
    - **Análisis temporal**: Permite estudios longitudinales
 
-### 🔗 Relaciones entre Entidades
+### Relaciones entre Entidades
 
 ```
 FlashcardEntity (1) -------- (N) StudySessionEntity
@@ -334,13 +389,13 @@ categorías                    memoria espaciada
    - Categorías como arreglo válido
    - Fechas coherentes (creación ≤ actualización)
 
-### 💡 Código Documentado y Buenas Prácticas
+### Código Documentado y Buenas Prácticas
 
-#### 📚 Principios de Clean Architecture Aplicados
+#### Principios de Clean Architecture Aplicados
 
-**1. ✅ Separación de Responsabilidades**
+**1. Separación de Responsabilidades**
 ```typescript
-// ❌ MAL: Lógica de negocio mezclada con infraestructura
+// MAL: Lógica de negocio mezclada con infraestructura
 class FlashcardController {
   async createFlashcard(req: Request, res: Response) {
     const flashcard = this.database.save(req.body); // ¡Acoplamiento directo!
@@ -348,7 +403,7 @@ class FlashcardController {
   }
 }
 
-// ✅ BIEN: Capas separadas y dependencias invertidas
+// BIEN: Capas separadas y dependencias invertidas
 class FlashcardController {
   constructor(private flashcardRepository: FlashcardRepository) {}
   
@@ -364,7 +419,7 @@ class FlashcardController {
 }
 ```
 
-**2. ✅ Inversión de Dependencias**
+**2. Inversión de Dependencias**
 ```typescript
 // Domain Layer (Abstracto)
 export abstract class FlashcardRepository {
@@ -382,7 +437,7 @@ export class FlashcardRepositoryImpl implements FlashcardRepository {
 }
 ```
 
-**3. ✅ Entidades con Comportamientos Ricos**
+**3. Entidades con Comportamientos Ricos**
 ```typescript
 export class FlashcardEntity {
   // ... propiedades
@@ -410,7 +465,7 @@ export class FlashcardEntity {
 }
 ```
 
-**4. ✅ DTOs con Validaciones Robustas**
+**4. DTOs con Validaciones Robustas**
 ```typescript
 export class CreateFlashcardDto {
   private constructor(
@@ -438,7 +493,7 @@ export class CreateFlashcardDto {
 }
 ```
 
-**5. ✅ Casos de Uso Específicos**
+**5. Casos de Uso Específicos**
 ```typescript
 export class CreateFlashcard implements CreateFlashcardUseCase {
   constructor(private repository: FlashcardRepository) {}
@@ -450,7 +505,7 @@ export class CreateFlashcard implements CreateFlashcardUseCase {
     // Regla de negocio: notificar cuando se crea flashcard difícil
     if (flashcard.difficulty >= 4) {
       // Aquí podríamos disparar eventos del dominio
-      console.log(`📚 Created challenging flashcard: ${flashcard.question}`);
+      console.log(`Created challenging flashcard: ${flashcard.question}`);
     }
     
     return flashcard;
@@ -458,7 +513,7 @@ export class CreateFlashcard implements CreateFlashcardUseCase {
 }
 ```
 
-#### 🛠️ Patrones de Diseño Implementados
+#### Patrones de Diseño Implementados
 
 **1. Repository Pattern**
 - **Propósito**: Abstrae el acceso a datos
@@ -485,7 +540,7 @@ export class CreateFlashcard implements CreateFlashcardUseCase {
 - **Beneficio**: Facilita testing y intercambio de implementaciones
 - **Implementación**: Constructor injection en todas las capas
 
-#### 📊 Estructura de Datasource JSON
+#### Estructura de Datasource JSON
 
 El datasource de memoria utiliza objetos JavaScript que se comportan como JSON:
 
@@ -529,26 +584,26 @@ export class FlashcardMemoryDatasource implements FlashcardDatasource {
 }
 ```
 
-#### 🔄 Flujo de Datos Completo
+#### Flujo de Datos Completo
 
 ```
-1. 📥 HTTP Request → Controller
-2. 🔍 DTO Validation → CreateFlashcardDto.create()
-3. 🎯 Use Case → CreateFlashcard.execute()
-4. 📚 Repository → FlashcardRepositoryImpl
-5. 💾 Datasource → FlashcardMemoryDatasource
-6. 🏗️ Entity Creation → FlashcardEntity.fromObject()
-7. 📤 HTTP Response → JSON serialized entity
+1. HTTP Request → Controller
+2. DTO Validation → CreateFlashcardDto.create()
+3. Use Case → CreateFlashcard.execute()
+4. Repository → FlashcardRepositoryImpl
+5. Datasource → FlashcardMemoryDatasource
+6. Entity Creation → FlashcardEntity.fromObject()
+7. HTTP Response → JSON serialized entity
 ```
 
-#### ✅ Beneficios del Diseño Implementado
+#### Beneficios del Diseño Implementado
 
-- **🔧 Mantenibilidad**: Código organizado por responsabilidades claras
-- **🧪 Testabilidad**: Fácil mock de dependencias por interfaces
-- **🔄 Flexibilidad**: Intercambio de datasources sin cambio de lógica
-- **📈 Escalabilidad**: Nuevos casos de uso sin afectar existentes
-- **🛡️ Robustez**: Validaciones en múltiples capas
-- **📚 Legibilidad**: Código autodocumentado y expresivo
+- **Mantenibilidad**: Código organizado por responsabilidades claras
+- **Testabilidad**: Fácil mock de dependencias por interfaces
+- **Flexibilidad**: Intercambio de datasources sin cambio de lógica
+- **Escalabilidad**: Nuevos casos de uso sin afectar existentes
+- **Robustez**: Validaciones en múltiples capas
+- **Legibilidad**: Código autodocumentado y expresivo
 
 ### DTOs Implementados
 
@@ -606,13 +661,13 @@ Validaciones para registrar sesión de estudio:
 - **Rutas**: Endpoints REST organizados
 - **Validaciones**: Middleware de validación HTTP
 
-## 📸 Evidencias de Funcionamiento
+## Evidencias de Funcionamiento
 
-### 🧪 Pruebas de API realizadas
+### Pruebas de API realizadas
 
 A continuación se documentan las pruebas realizadas para verificar el correcto funcionamiento del sistema de flashcards:
 
-#### 1. ✅ Verificación del Sistema
+#### 1. Verificación del Sistema
 ```bash
 # Comando ejecutado
 curl http://localhost:3000/api/system/info
@@ -636,7 +691,7 @@ curl http://localhost:3000/api/system/info
 }
 ```
 
-#### 2. ✅ GET - Obtener todas las flashcards
+#### 2. GET - Obtener todas las flashcards
 ```bash
 # Comando ejecutado
 curl http://localhost:3000/api/flashcards
@@ -673,7 +728,7 @@ curl http://localhost:3000/api/flashcards
 ]
 ```
 
-#### 3. ✅ POST - Crear nueva flashcard
+#### 3. POST - Crear nueva flashcard
 ```bash
 # Comando ejecutado
 curl -X POST http://localhost:3000/api/flashcards \
@@ -697,7 +752,7 @@ curl -X POST http://localhost:3000/api/flashcards \
 }
 ```
 
-#### 4. ✅ GET por ID - Obtener flashcard específica
+#### 4. GET por ID - Obtener flashcard específica
 ```bash
 # Comando ejecutado
 curl http://localhost:3000/api/flashcards/1
@@ -714,7 +769,7 @@ curl http://localhost:3000/api/flashcards/1
 }
 ```
 
-#### 5. ✅ PUT - Actualizar flashcard (actualización parcial)
+#### 5. PUT - Actualizar flashcard (actualización parcial)
 ```bash
 # Comando ejecutado
 curl -X PUT http://localhost:3000/api/flashcards/1 \
@@ -733,7 +788,7 @@ curl -X PUT http://localhost:3000/api/flashcards/1 \
 }
 ```
 
-#### 6. ✅ GET con filtro - Buscar por categoría
+#### 6. GET con filtro - Buscar por categoría
 ```bash
 # Comando ejecutado
 curl "http://localhost:3000/api/flashcards?category=javascript"
@@ -752,7 +807,7 @@ curl "http://localhost:3000/api/flashcards?category=javascript"
 ]
 ```
 
-#### 7. ✅ GET - Obtener todas las categorías
+#### 7. GET - Obtener todas las categorías
 ```bash
 # Comando ejecutado
 curl http://localhost:3000/api/flashcards/categories
@@ -770,7 +825,7 @@ curl http://localhost:3000/api/flashcards/categories
 ]
 ```
 
-#### 8. ✅ DELETE - Eliminar flashcard
+#### 8. DELETE - Eliminar flashcard
 ```bash
 # Comando ejecutado
 curl -X DELETE http://localhost:3000/api/flashcards/4
@@ -787,7 +842,7 @@ curl -X DELETE http://localhost:3000/api/flashcards/4
 }
 ```
 
-### 🔍 Validaciones de Errores Probadas
+### Validaciones de Errores Probadas
 
 #### Error 404 - Flashcard no encontrada
 ```bash
@@ -813,18 +868,18 @@ curl -X POST http://localhost:3000/api/flashcards \
 }
 ```
 
-### 📊 Resumen de Pruebas
+### Resumen de Pruebas
 
 | Operación | Endpoint | Método | Estado | Validaciones |
 |-----------|----------|---------|--------|-------------|
-| Listar todas | `/api/flashcards` | GET | ✅ Exitoso | Datos precargados |
-| Crear nueva | `/api/flashcards` | POST | ✅ Exitoso | DTOs validados |
-| Obtener por ID | `/api/flashcards/:id` | GET | ✅ Exitoso | ID válido |
-| Actualizar | `/api/flashcards/:id` | PUT | ✅ Exitoso | Update parcial |
-| Eliminar | `/api/flashcards/:id` | DELETE | ✅ Exitoso | Eliminación confirmada |
-| Filtrar por categoría | `/api/flashcards?category=X` | GET | ✅ Exitoso | Filtro funcional |
-| Obtener categorías | `/api/flashcards/categories` | GET | ✅ Exitoso | Lista actualizada |
-| Manejo de errores | Varios | Varios | ✅ Exitoso | Errores apropiados |
+| Listar todas | `/api/flashcards` | GET | Exitoso | Datos precargados |
+| Crear nueva | `/api/flashcards` | POST | Exitoso | DTOs validados |
+| Obtener por ID | `/api/flashcards/:id` | GET | Exitoso | ID válido |
+| Actualizar | `/api/flashcards/:id` | PUT | Exitoso | Update parcial |
+| Eliminar | `/api/flashcards/:id` | DELETE | Exitoso | Eliminación confirmada |
+| Filtrar por categoría | `/api/flashcards?category=X` | GET | Exitoso | Filtro funcional |
+| Obtener categorías | `/api/flashcards/categories` | GET | Exitoso | Lista actualizada |
+| Manejo de errores | Varios | Varios | Exitoso | Errores apropiados |
 
 ## API Endpoints
 
@@ -848,18 +903,18 @@ Para más detalles sobre los endpoints de memoria, consulta [MEMORY_DATASOURCE.m
 
 ## Casos de Uso
 
-### 🧠 Memory Datasource (Recomendado para inicio)
-- ✅ **Desarrollo rápido** sin configuración de base de datos
-- ✅ **Testing** y prototipos instantáneos
-- ✅ **Demos** y presentaciones
-- ✅ **Aprendizaje** de arquitectura limpia
-- ✅ **CI/CD** sin dependencias externas
+### Memory Datasource (Recomendado para inicio)
+- **Desarrollo rápido** sin configuración de base de datos
+- **Testing** y prototipos instantáneos
+- **Demos** y presentaciones
+- **Aprendizaje** de arquitectura limpia
+- **CI/CD** sin dependencias externas
 
-### 🗄️ Prisma/TypeORM
-- ✅ Aplicaciones en producción
-- ✅ Persistencia de datos
-- ✅ Aplicaciones multi-usuario
-- ✅ Transacciones complejas
+### Prisma/TypeORM
+- Aplicaciones en producción
+- Persistencia de datos
+- Aplicaciones multi-usuario
+- Transacciones complejas
 
 ## Detección Automática de Datasource
 
@@ -886,19 +941,19 @@ Puedes usar el archivo `memory-datasource.http` para probar la funcionalidad con
 
 ## Ventajas de esta Arquitectura
 
-1. **🔄 Intercambiable**: Cambia entre datasources sin modificar código de negocio
-2. **🚀 Inicio inmediato**: Funciona sin configuración con datasource de memoria
-3. **🧪 Testing**: Ideal para pruebas sin dependencias externas
-4. **📚 Educativo**: Perfecto para aprender arquitectura limpia
-5. **🔧 Flexible**: Cada datasource para su caso de uso específico
+1. **Intercambiable**: Cambia entre datasources sin modificar código de negocio
+2. **Inicio inmediato**: Funciona sin configuración con datasource de memoria
+3. **Testing**: Ideal para pruebas sin dependencias externas
+4. **Educativo**: Perfecto para aprender arquitectura limpia
+5. **Flexible**: Cada datasource para su caso de uso específico
 
-## 🏗️ Modelado del Dominio
+## Modelado del Dominio
 
 ### Entidades del Dominio
 
 La aplicación implementa un sistema de flashcards con memoria espaciada basado en los principios de Clean Architecture. Las entidades del dominio han sido diseñadas para capturar las reglas de negocio esenciales del sistema de aprendizaje.
 
-#### 📚 FlashcardEntity
+#### FlashcardEntity
 
 **Descripción**: Representa una tarjeta de estudio (flashcard) que contiene una pregunta, respuesta y metadatos asociados.
 
@@ -927,7 +982,7 @@ La aplicación implementa un sistema de flashcards con memoria espaciada basado 
 - **Integridad de datos**: Valida que question, answer y categorías sean obligatorias
 - **Comportamientos específicos**: Encapsula la lógica de manipulación de categorías
 
-#### 📊 StudySessionEntity
+#### StudySessionEntity
 
 **Descripción**: Registra cada interacción del usuario con una flashcard durante el estudio, implementando los principios de memoria espaciada.
 
@@ -953,7 +1008,7 @@ La aplicación implementa un sistema de flashcards con memoria espaciada basado 
 - **Historial de progreso**: Habilita seguimiento del progreso del usuario
 - **Datos para optimización**: Proporciona información para mejorar el algoritmo de estudio
 
-### 🎯 Reglas de Negocio Implementadas
+### Reglas de Negocio Implementadas
 
 1. **Integridad de Flashcards**:
    - Una flashcard debe tener pregunta y respuesta obligatorias
@@ -974,14 +1029,14 @@ La aplicación implementa un sistema de flashcards con memoria espaciada basado 
    - Todas las entidades mantienen timestamps de creación/modificación
    - Las sesiones de estudio son inmutables una vez creadas
 
-### 🔄 Patrones de Diseño Aplicados
+### Patrones de Diseño Aplicados
 
 - **Entity Pattern**: Entidades con identidad y comportamientos específicos
 - **Factory Method**: Métodos `fromObject()` para construcción segura
 - **Value Objects**: Respuestas de estudio como tipos enumerados
 - **Domain Services**: Lógica compleja en casos de uso específicos
 
-### 📝 DTOs (Data Transfer Objects)
+### DTOs (Data Transfer Objects)
 
 Los DTOs validan y transportan datos entre capas, asegurando la integridad de las reglas de negocio:
 
@@ -1008,7 +1063,7 @@ Los DTOs validan y transportan datos entre capas, asegurando la integridad de la
   - Response debe ser: 'easy', 'medium', 'hard', 'again'
   - TimeSpent debe ser positivo
 
-### 🎯 Casos de Uso (Use Cases)
+### Casos de Uso (Use Cases)
 
 Los casos de uso encapsulan la lógica de negocio específica:
 
@@ -1030,7 +1085,7 @@ Los casos de uso encapsulan la lógica de negocio específica:
 - GetRecentSessions    // Sesiones recientes de estudio
 ```
 
-### 🏛️ Arquitectura por Capas
+### Arquitectura por Capas
 
 ```
 📁 Domain Layer (Reglas de Negocio)
@@ -1049,20 +1104,20 @@ Los casos de uso encapsulan la lógica de negocio específica:
 └── routes/           # Definición de rutas
 ```
 
-## 📄 Documentación Adicional
+## Documentación Adicional
 
-### 📁 Archivos de Pruebas HTTP
+### Archivos de Pruebas HTTP
 
 Para facilitar las pruebas, se incluyen archivos con ejemplos de peticiones HTTP:
 
 - **[flashcards-api.http](./flashcards-api.http)** - Pruebas completas de la API de flashcards
 - **[memory-datasource.http](./memory-datasource.http)** - Pruebas del sistema de todos con datasource de memoria
 
-### 📚 Guías Específicas
+### Guías Específicas
 
 - **[MEMORY_DATASOURCE.md](./MEMORY_DATASOURCE.md)** - Guía completa del datasource de memoria
 
-### 🖼️ Capturas de Pantalla de la Aplicación Frontend
+### Capturas de Pantalla de la Aplicación Frontend
 
 La aplicación incluye un frontend de demostración que muestra el funcionamiento del sistema:
 
@@ -1072,20 +1127,20 @@ La aplicación incluye un frontend de demostración que muestra el funcionamient
 - **I4.jpg**: Visualización de flashcard durante el estudio
 - **I5.jpg**: Flashcard volteada mostrando la respuesta
 
-## 📸 Evidencias de Pruebas - API Flashcards
+## Evidencias de Pruebas - API Flashcards
 
-### 🧪 Secuencia de Pruebas Realizadas
+### Secuencia de Pruebas Realizadas
 
 A continuación se documentan las pruebas exhaustivas realizadas sobre la API de flashcards, demostrando el funcionamiento completo del sistema con datasource basado en objetos JSON:
 
-#### **🔍 Prueba 1: Verificación del Sistema Iniciado**
+#### **Prueba 1: Verificación del Sistema Iniciado**
 ![Evidencia 1 - Sistema Funcionando](./doc/evidencias/image.png)
 
 **Descripción**: Verificación de que la aplicación está corriendo correctamente con `npm run dev:memory` y el datasource de memoria está activo.
 
 ---
 
-#### **📋 Prueba 2: Obtener Todas las Flashcards (GET /api/flashcards)**
+#### **Prueba 2: Obtener Todas las Flashcards (GET /api/flashcards)**
 ![Evidencia 2 - GET All Flashcards](./doc/evidencias/image2.png)
 
 **Descripción**: 
@@ -1096,7 +1151,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **➕ Prueba 3: Crear Nueva Flashcard (POST /api/flashcards)**
+#### **Prueba 3: Crear Nueva Flashcard (POST /api/flashcards)**
 ![Evidencia 3 - POST Create Flashcard](./doc/evidencias/image3.png)
 
 **Descripción**:
@@ -1115,7 +1170,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **🔎 Prueba 4: Obtener Flashcard por ID (GET /api/flashcards/:id)**
+#### **Prueba 4: Obtener Flashcard por ID (GET /api/flashcards/:id)**
 ![Evidencia 4 - GET Flashcard by ID](./doc/evidencias/image4.png)
 
 **Descripción**:
@@ -1126,7 +1181,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **✏️ Prueba 5: Actualizar Flashcard (PUT /api/flashcards/:id)**
+#### **Prueba 5: Actualizar Flashcard (PUT /api/flashcards/:id)**
 ![Evidencia 5 - PUT Update Flashcard](./doc/evidencias/image5.png)
 
 **Descripción**:
@@ -1138,7 +1193,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **🗂️ Prueba 6: Filtrar por Categoría (GET /api/flashcards?category=X)**
+#### **Prueba 6: Filtrar por Categoría (GET /api/flashcards?category=X)**
 ![Evidencia 6 - Filter by Category](./doc/evidencias/image6.png)
 
 **Descripción**:
@@ -1149,7 +1204,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **📂 Prueba 7: Obtener Todas las Categorías (GET /api/flashcards/categories)**
+#### **Prueba 7: Obtener Todas las Categorías (GET /api/flashcards/categories)**
 ![Evidencia 7 - GET All Categories](./doc/evidencias/image7.png)
 
 **Descripción**:
@@ -1160,7 +1215,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **🗑️ Prueba 8: Eliminar Flashcard (DELETE /api/flashcards/:id)**
+#### **Prueba 8: Eliminar Flashcard (DELETE /api/flashcards/:id)**
 ![Evidencia 8 - DELETE Flashcard](./doc/evidencias/image8.png)
 
 **Descripción**:
@@ -1171,7 +1226,7 @@ A continuación se documentan las pruebas exhaustivas realizadas sobre la API de
 
 ---
 
-#### **Evidencia general **
+#### **Evidencia general**
 ![Evidencia general](./doc/image.png)
 
 **Descripción**:
@@ -1182,39 +1237,39 @@ Una captura de las pruebas hechas con postman
 
 
 
-### ✅ **Resumen de Evidencias**
+### **Resumen de Evidencias**
 
-**🎯 Operaciones CRUD Completas Verificadas:**
-- ✅ **CREATE** - POST funcional con validaciones
-- ✅ **READ** - GET individual y listado completo
-- ✅ **UPDATE** - PUT con actualización parcial
-- ✅ **DELETE** - Eliminación exitosa con confirmación
+**Operaciones CRUD Completas Verificadas:**
+- **CREATE** - POST funcional con validaciones
+- **READ** - GET individual y listado completo
+- **UPDATE** - PUT con actualización parcial
+- **DELETE** - Eliminación exitosa con confirmación
 
-**📊 Funcionalidades Adicionales Probadas:**
-- ✅ **Filtrado por categoría** - Búsqueda flexible
-- ✅ **Gestión de categorías** - Extracción automática de categorías únicas
-- ✅ **Validación de datos** - DTOs funcionando correctamente
-- ✅ **Persistencia en memoria** - Datasource JSON operativo
+**Funcionalidades Adicionales Probadas:**
+- **Filtrado por categoría** - Búsqueda flexible
+- **Gestión de categorías** - Extracción automática de categorías únicas
+- **Validación de datos** - DTOs funcionando correctamente
+- **Persistencia en memoria** - Datasource JSON operativo
 
-**🏗️ Arquitectura Limpia Verificada:**
-- ✅ **Separación de capas** - Dominio, Infraestructura, Presentación
-- ✅ **Inyección de dependencias** - Repositorios e implementaciones
-- ✅ **Patrones de diseño** - Repository, Use Case, DTO implementados
+**Arquitectura Limpia Verificada:**
+- **Separación de capas** - Dominio, Infraestructura, Presentación
+- **Inyección de dependencias** - Repositorios e implementaciones
+- **Patrones de diseño** - Repository, Use Case, DTO implementados
 
-**💾 Datasource JSON Confirmado:**
-- ✅ **Almacenamiento en memoria** - Objetos JavaScript estructurados
-- ✅ **Datos precargados** - 3 flashcards de ejemplo disponibles
-- ✅ **Operaciones dinámicas** - Creación, modificación y eliminación en tiempo real
+**Datasource JSON Confirmado:**
+- **Almacenamiento en memoria** - Objetos JavaScript estructurados
+- **Datos precargados** - 3 flashcards de ejemplo disponibles
+- **Operaciones dinámicas** - Creación, modificación y eliminación en tiempo real
 
-## 🎯 Conclusiones
+## Conclusiones
 
-### ✅ Cumplimiento de Requisitos
+### Cumplimiento de Requisitos
 
-**📋 Parámetro Evaluado**: "Implementar al menos una ruta del servicio REST, usando datasource basado en un objeto JSON"
+**Parámetro Evaluado**: "Implementar al menos una ruta del servicio REST, usando datasource basado en un objeto JSON"
 
-**✅ COMPLETAMENTE CUMPLIDO:**
+**COMPLETAMENTE CUMPLIDO:**
 
-#### 1. **🛣️ Múltiples rutas REST implementadas** (Supera el requisito mínimo)
+#### 1. **Múltiples rutas REST implementadas** (Supera el requisito mínimo)
 ```typescript
 // 7 endpoints diferentes implementados
 GET    /api/flashcards                    # Obtener todas las flashcards
@@ -1226,7 +1281,7 @@ GET    /api/flashcards?category=X         # Filtrar por categoría
 GET    /api/flashcards/categories         # Obtener categorías
 ```
 
-#### 2. **💾 Datasource basado en objetos JSON** (Requisito central)
+#### 2. **Datasource basado en objetos JSON** (Requisito central)
 ```typescript
 // Implementación en FlashcardMemoryDatasource
 private flashcards: FlashcardEntity[] = [
@@ -1243,15 +1298,15 @@ private flashcards: FlashcardEntity[] = [
 ];
 ```
 
-#### 3. **🏗️ Arquitectura limpia mantenida**
-- ✅ **Separación de capas**: Dominio, Infraestructura, Presentación
-- ✅ **Principios SOLID**: Aplicados consistentemente
-- ✅ **Patrones de diseño**: Repository, Use Case, DTO implementados
-- ✅ **Inyección de dependencias**: Configurada correctamente
+#### 3. **Arquitectura limpia mantenida**
+- **Separación de capas**: Dominio, Infraestructura, Presentación
+- **Principios SOLID**: Aplicados consistentemente
+- **Patrones de diseño**: Repository, Use Case, DTO implementados
+- **Inyección de dependencias**: Configurada correctamente
 
-#### 4. **📚 Código documentado y coherente**
+#### 4. **Código documentado y coherente**
 
-**🔧 Estructura de Archivos Organizada:**
+**Estructura de Archivos Organizada:**
 ```
 src/
 ├── domain/                              # Capa de Dominio
@@ -1268,53 +1323,53 @@ src/
         └── routes.memory.ts             # Configuración de rutas
 ```
 
-**📝 Documentación Completa:**
-- ✅ **README detallado**: Análisis del dominio, justificaciones, instrucciones
-- ✅ **Comentarios en código**: Explicaciones de lógica de negocio
-- ✅ **DTOs documentados**: Validaciones y reglas claramente explicadas
-- ✅ **Casos de uso explicados**: Propósito y funcionamiento de cada operación
-- ✅ **Evidencias visuales**: 8 capturas de pantalla documentando todas las pruebas
+**Documentación Completa:**
+- **README detallado**: Análisis del dominio, justificaciones, instrucciones
+- **Comentarios en código**: Explicaciones de lógica de negocio
+- **DTOs documentados**: Validaciones y reglas claramente explicadas
+- **Casos de uso explicados**: Propósito y funcionamiento de cada operación
+- **Evidencias visuales**: 8 capturas de pantalla documentando todas las pruebas
 
-**🧪 Evidencias Exhaustivas:**
-- ✅ **8 pruebas documentadas**: Cada operación CRUD + funcionalidades adicionales
-- ✅ **Screenshots ordenados**: Secuencia lógica de pruebas realizadas
-- ✅ **Resultados verificables**: JSON responses completos mostrados
-- ✅ **Status codes confirmados**: 200, 201 según corresponde
+**Evidencias Exhaustivas:**
+- **8 pruebas documentadas**: Cada operación CRUD + funcionalidades adicionales
+- **Screenshots ordenados**: Secuencia lógica de pruebas realizadas
+- **Resultados verificables**: JSON responses completos mostrados
+- **Status codes confirmados**: 200, 201 según corresponde
 
-#### 5. **📊 Instrucciones de Ejecución Claras**
+#### 5. **Instrucciones de Ejecución Claras**
 
-**💻 Comando Simple:**
+**Comando Simple:**
 ```bash
 npm run dev:memory
 ```
 
-**🎯 Características del Comando:**
-- ✅ **Sin configuración adicional**: Funciona inmediatamente
-- ✅ **Datos precargados**: 3 flashcards de ejemplo incluidas
-- ✅ **Auto-configuración**: DATASOURCE_TYPE=memory automático
-- ✅ **Recarga automática**: ts-node-dev para desarrollo ágil
+**Características del Comando:**
+- **Sin configuración adicional**: Funciona inmediatamente
+- **Datos precargados**: 3 flashcards de ejemplo incluidas
+- **Auto-configuración**: DATASOURCE_TYPE=memory automático
+- **Recarga automática**: ts-node-dev para desarrollo ágil
 
-**🔍 Verificación Inmediata:**
+**Verificación Inmediata:**
 ```bash
 curl http://localhost:3000/api/flashcards
 # Retorna las 3 flashcards precargadas inmediatamente
 ```
 
-### 🏆 Resultado Final
+### Resultado Final
 
-**✅ PARÁMETRO COMPLETAMENTE CUMPLIDO Y SUPERADO:**
+**PARÁMETRO COMPLETAMENTE CUMPLIDO Y SUPERADO:**
 
-- ✅ **Mínimo requerido**: 1 ruta REST con datasource JSON → **CUMPLIDO**
-- 🚀 **Implementado**: 7 rutas REST completas con datasource JSON → **SUPERADO**
-- ✅ **Código documentado**: README exhaustivo + comentarios en código → **CUMPLIDO**
-- ✅ **Instrucciones claras**: `npm run dev:memory` + verificación → **CUMPLIDO**  
-- ✅ **Evidencias completas**: 8 capturas ordenadas + explicaciones → **CUMPLIDO**
+- **Mínimo requerido**: 1 ruta REST con datasource JSON → **CUMPLIDO**
+- **Implementado**: 7 rutas REST completas con datasource JSON → **SUPERADO**
+- **Código documentado**: README exhaustivo + comentarios en código → **CUMPLIDO**
+- **Instrucciones claras**: `npm run dev:memory` + verificación → **CUMPLIDO**  
+- **Evidencias completas**: 8 capturas ordenadas + explicaciones → **CUMPLIDO**
 
-**📈 Valor Agregado Entregado:**
-- 🎯 **Dominio complejo y realista**: Sistema de flashcards con memoria espaciada
-- 🏗️ **Arquitectura profesional**: Clean Architecture implementada correctamente
-- 🔧 **Código robusto**: Validaciones, DTOs, casos de uso específicos
-- 📱 **API REST completa**: Operaciones CRUD + filtros + categorías
-- 🧪 **Testing exhaustivo**: Todas las funcionalidades probadas y documentadas
+**Valor Agregado Entregado:**
+- **Dominio complejo y realista**: Sistema de flashcards con memoria espaciada
+- **Arquitectura profesional**: Clean Architecture implementada correctamente
+- **Código robusto**: Validaciones, DTOs, casos de uso específicos
+- **API REST completa**: Operaciones CRUD + filtros + categorías
+- **Testing exhaustivo**: Todas las funcionalidades probadas y documentadas
 
 

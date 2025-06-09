@@ -1,3 +1,9 @@
+
+/**
+ * PARÁMETRO 1: Definición del dominio - Entidad StudySession
+ * Esta entidad modela las sesiones de estudio para el algoritmo de repetición espaciada,
+ * registrando el rendimiento del usuario y determinando cuándo revisar cada flashcard.
+ */
 export class StudySessionEntity {
 
   constructor(

@@ -2,8 +2,14 @@ import { CreateFlashcardDto, UpdateFlashcardDto } from '../../domain/dtos';
 import { FlashcardDatasource } from '../../domain/datasources/flashcard.datasource';
 import { FlashcardEntity } from '../../domain/entities/flashcard.entity';
 
+/**
+ * PARÁMETRO 2: Datasource basado en objetos JSON
+ * Esta clase implementa el almacenamiento en memoria usando objetos JavaScript
+ * que representan la estructura JSON requerida por el parámetro de evaluación.
+ */
 export class FlashcardMemoryDatasource implements FlashcardDatasource {
 
+  // PARÁMETRO 2: Array de objetos JSON como datasource
   private flashcards: FlashcardEntity[] = [
     new FlashcardEntity(
       1,

@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { TodosMemoryController } from './controller.memory';
 
+/**
+ * PARÁMETRO 3: Servicio REST auxiliar - Configuración de rutas
+ * Define las rutas REST del servicio auxiliar de TODOs que complementa
+ * al servicio principal de flashcards.
+ */
 export class TodoMemoryRoutes {
 
   static get routes(): Router {
@@ -8,7 +13,7 @@ export class TodoMemoryRoutes {
     const router = Router();
     const todoController = new TodosMemoryController();
 
-    // Rutas estándar de CRUD
+    // PARÁMETRO 3: Rutas CRUD del servicio auxiliar (arquitectura 2 capas)
     router.get('/', todoController.getTodos);
     router.get('/:id', todoController.getTodoById);
     router.post('/', todoController.createTodo);

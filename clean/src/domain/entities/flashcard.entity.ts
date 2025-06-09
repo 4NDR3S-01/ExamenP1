@@ -1,3 +1,9 @@
+
+/**
+ * PARÁMETRO 1: Definición del dominio - Entidad Flashcard
+ * Esta entidad representa el núcleo del dominio de flashcards para aprendizaje
+ * mediante repetición espaciada. Encapsula las reglas de negocio específicas.
+ */
 export class FlashcardEntity {
 
   constructor(
